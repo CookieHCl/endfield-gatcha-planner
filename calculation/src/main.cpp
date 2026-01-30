@@ -6,7 +6,7 @@ int main()
 {
 	iostream::sync_with_stdio(0);
 
-	constexpr int SIMULATION_COUNT = 10'000'000;
+	constexpr long long SIMULATION_COUNT = 10'000'000;
 	const string outputDir = "results";
 
 	if (!filesystem::exists(outputDir))
@@ -24,6 +24,9 @@ int main()
 		for (int i = 1; i <= 120; ++i)
 		{
 			rollEv += (long long)i * result.rollCount[i];
+		}
+		for (int i = 1; i <= SimulationResult::MAX_SSR_COUNT; ++i)
+		{
 			ssrEv += (long long)i * result.SSRCount[i];
 		}
 
@@ -54,10 +57,10 @@ int main()
 		}
 		outFile << "  ],\n";
 		outFile << "  \"SSRCount\": [\n";
-		for (int i = 0; i <= 120; ++i)
+		for (int i = 0; i <= SimulationResult::MAX_SSR_COUNT; ++i)
 		{
 			outFile << "    " << (double)result.SSRCount[i] / SIMULATION_COUNT;
-			if (i < 120)
+			if (i < SimulationResult::MAX_SSR_COUNT)
 				outFile << ",";
 			outFile << "\n";
 		}

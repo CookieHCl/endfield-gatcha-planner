@@ -2,7 +2,7 @@
 
 Simulator::Simulator(int initialPity) : initialPity(initialPity) {}
 
-SimulationResult Simulator::runSimulation(int simulationCount)
+SimulationResult Simulator::runSimulation(long long simulationCount)
 {
 	SimulationResult globalResult;
 
@@ -12,9 +12,11 @@ SimulationResult Simulator::runSimulation(int simulationCount)
 		RNG rng;
 
 #pragma omp for
-		for (int i = 0; i < simulationCount; ++i)
+		for (long long i = 0; i < simulationCount; ++i)
 		{
 			auto [rolls, ssrs] = runSingleSession(rng);
+			ssrs = std::min(ssrs, SimulationResult::MAX_SSR_COUNT);
+
 			localResult.rollCount[rolls]++;
 			localResult.SSRCount[ssrs]++;
 		}
@@ -24,6 +26,9 @@ SimulationResult Simulator::runSimulation(int simulationCount)
 			for (int i = 1; i <= 120; ++i)
 			{
 				globalResult.rollCount[i] += localResult.rollCount[i];
+			}
+			for (int i = 1; i <= SimulationResult::MAX_SSR_COUNT; ++i)
+			{
 				globalResult.SSRCount[i] += localResult.SSRCount[i];
 			}
 		}
