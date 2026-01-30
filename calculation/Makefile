@@ -1,6 +1,6 @@
 # === Config ===
 CXX ?= g++
-CXXFLAGS ?= -std=gnu++20 -O3 -Wall -Wextra -march=native -DNDEBUG
+CXXFLAGS ?= -std=gnu++20 -O3 -Wall -Wextra -march=native -fopenmp -DNDEBUG
 
 TARGET ?= gatcha_sim
 ifeq ($(OS),Windows_NT)

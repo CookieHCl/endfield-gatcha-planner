@@ -4,17 +4,32 @@ Simulator::Simulator(int initialPity) : initialPity(initialPity) {}
 
 SimulationResult Simulator::runSimulation(int simulationCount)
 {
-	SimulationResult result;
-	RNG rng;
+	SimulationResult globalResult;
 
-	for (int i = 0; i < simulationCount; ++i)
+#pragma omp parallel
 	{
-		auto [rolls, ssrs] = runSingleSession(rng);
-		result.rollCount[rolls]++;
-		result.SSRCount[ssrs]++;
+		SimulationResult localResult;
+		RNG rng;
+
+#pragma omp for
+		for (int i = 0; i < simulationCount; ++i)
+		{
+			auto [rolls, ssrs] = runSingleSession(rng);
+			localResult.rollCount[rolls]++;
+			localResult.SSRCount[ssrs]++;
+		}
+
+#pragma omp critical
+		{
+			for (int i = 1; i <= 120; ++i)
+			{
+				globalResult.rollCount[i] += localResult.rollCount[i];
+				globalResult.SSRCount[i] += localResult.SSRCount[i];
+			}
+		}
 	}
 
-	return result;
+	return globalResult;
 }
 
 std::pair<int, int> Simulator::runSingleSession(RNG &rng)
