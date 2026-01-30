@@ -1,8 +1,6 @@
 #include "GachaEngine.h"
 
-GachaEngine::GachaEngine() : rng() {}
-
-PullResult GachaEngine::rollOnce(GachaState &state)
+PullResult GachaEngine::rollOnce(GachaState &state, RNG &rng)
 {
 	// 편하게 일단 스택 증가시키고 시작함
 	// 1번째 뽑기 -> 1/1
@@ -54,7 +52,7 @@ PullResult GachaEngine::rollOnce(GachaState &state)
 	return result;
 }
 
-UrgentPullResult GachaEngine::rollTen()
+UrgentPullResult GachaEngine::rollTen(RNG &rng)
 {
 	UrgentPullResult result;
 

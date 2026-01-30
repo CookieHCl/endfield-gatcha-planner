@@ -1,8 +1,7 @@
 #pragma once
 
-class GachaState
+struct GachaState
 {
-public:
 	int pityCount;
 	int totalCount;
 	bool gotTargetSSR;

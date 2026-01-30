@@ -20,22 +20,18 @@ struct UrgentPullResult
 class GachaEngine
 {
 public:
-	GachaEngine();
-
-	PullResult rollOnce(GachaState &state);
-	UrgentPullResult rollTen();
+	static PullResult rollOnce(GachaState &state, RNG &rng);
+	static UrgentPullResult rollTen(RNG &rng);
 
 private:
-	double getSSRProbability(int pityCount);
+	static double getSSRProbability(int pityCount);
 
-	RNG rng;
+	static const int pityThreshold = 80;
+	static const int targetThreshold = 120;
 
-	const int pityThreshold = 80;
-	const int targetThreshold = 120;
+	static constexpr double baseSSRProbability = 0.008;
+	static const int probabilityIncreaseThreshold = 65;
+	static constexpr double probabilityIncreasePerPull = 0.05;
 
-	double baseSSRProbability = 0.008;
-	const int probabilityIncreaseThreshold = 65;
-	const long double probabilityIncreasePerPull = 0.05;
-
-	double targetSSRProbability = 0.5;
+	static constexpr double targetSSRProbability = 0.5;
 };

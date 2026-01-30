@@ -17,8 +17,7 @@ public:
 	SimulationResult runSimulation(int simulationCount = 1000000);
 
 private:
-	std::pair<int, int> runSingleSession();
+	std::pair<int, int> runSingleSession(RNG &rng);
 
 	int initialPity;
-	GachaEngine engine;
 };
