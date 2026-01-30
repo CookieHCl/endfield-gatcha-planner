@@ -6,30 +6,67 @@ int main()
 {
 	iostream::sync_with_stdio(0);
 
-	const int SIMULATION_COUNT = 10000000;
+	constexpr int SIMULATION_COUNT = 10'000'000;
+	const string outputDir = "results";
 
-	Simulator simulator(0);
-
-	chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
-	SimulationResult result = simulator.runSimulation(SIMULATION_COUNT);
-	chrono::high_resolution_clock::time_point end = chrono::high_resolution_clock::now();
-
-	long long rollEv = 0, ssrEv = 0;
-
-	for (int i = 1; i <= 120; ++i)
+	if (!filesystem::exists(outputDir))
 	{
-		cout << i << " rolls: " << result.rollCount[i] << "\n";
-		rollEv += i * result.rollCount[i];
-		ssrEv += i * result.SSRCount[i];
+		filesystem::create_directory(outputDir);
 	}
-	cout << "Expected rolls to get target SSR: " << (double)rollEv / SIMULATION_COUNT << "\n";
-	cout << "Expected SSR count: " << (double)ssrEv / SIMULATION_COUNT << "\n";
 
-	// Thread 이전) 7909ms
-	// Thread 이후) 385ms!!!
-	cout << "Simulation Time: "
-		 << chrono::duration_cast<chrono::milliseconds>(end - start).count()
-		 << " ms\n";
+	for (int pityCount = 0; pityCount < 80; ++pityCount)
+	{
+		Simulator simulator(pityCount);
+		SimulationResult result = simulator.runSimulation(SIMULATION_COUNT);
+
+		// calculate EV
+		long long rollEv = 0, ssrEv = 0;
+		for (int i = 1; i <= 120; ++i)
+		{
+			rollEv += (long long)i * result.rollCount[i];
+			ssrEv += (long long)i * result.SSRCount[i];
+		}
+
+		cout << "Pity " << pityCount << " => rollEv: "
+			 << (double)rollEv / SIMULATION_COUNT
+			 << ", ssrEv: "
+			 << (double)ssrEv / SIMULATION_COUNT
+			 << "\n";
+
+		// output to file
+		string fileName = outputDir + "/pity_" + to_string(pityCount) + ".json";
+		ofstream outFile(fileName);
+
+		if (!outFile.is_open())
+		{
+			cerr << "Error: Could not open file " << fileName << " for writing.\n";
+			continue;
+		}
+
+		outFile << "{\n";
+		outFile << "  \"rollCount\": [\n";
+		for (int i = 0; i <= 120; ++i)
+		{
+			outFile << "    " << (double)result.rollCount[i] / SIMULATION_COUNT;
+			if (i < 120)
+				outFile << ",";
+			outFile << "\n";
+		}
+		outFile << "  ],\n";
+		outFile << "  \"SSRCount\": [\n";
+		for (int i = 0; i <= 120; ++i)
+		{
+			outFile << "    " << (double)result.SSRCount[i] / SIMULATION_COUNT;
+			if (i < 120)
+				outFile << ",";
+			outFile << "\n";
+		}
+		outFile << "  ],\n";
+		outFile << "  \"rollEv\": " << (double)rollEv / SIMULATION_COUNT << ",\n";
+		outFile << "  \"ssrEv\": " << (double)ssrEv / SIMULATION_COUNT << "\n";
+		outFile << "}\n";
+		outFile.close();
+	}
 
 	return 0;
 }
