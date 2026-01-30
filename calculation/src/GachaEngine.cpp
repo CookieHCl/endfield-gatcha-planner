@@ -1,6 +1,6 @@
 #include "GachaEngine.h"
 
-GachaEngine::GachaEngine() {}
+GachaEngine::GachaEngine() : rng() {}
 
 PullResult GachaEngine::rollOnce(GachaState &state)
 {
@@ -51,6 +51,20 @@ PullResult GachaEngine::rollOnce(GachaState &state)
 		state.gotTargetSSR = true;
 		break;
 	}
+	return result;
+}
+
+UrgentPullResult GachaEngine::rollTen()
+{
+	UrgentPullResult result;
+
+	result.SSRCount = rng.binom(10, baseSSRProbability);
+
+	if (result.SSRCount > 0)
+	{
+		result.targetSSRCount = rng.binom(result.SSRCount, targetSSRProbability);
+	}
+
 	return result;
 }
 

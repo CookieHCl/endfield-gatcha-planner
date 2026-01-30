@@ -9,6 +9,12 @@ enum class PullResult
 	TARGET_SSR
 };
 
+struct UrgentPullResult
+{
+	int SSRCount = 0;
+	int targetSSRCount = 0;
+};
+
 // 30, 60은 복잡해서 Simulator에서 구현함
 // 80, 120만 고려함
 class GachaEngine
@@ -17,6 +23,7 @@ public:
 	GachaEngine();
 
 	PullResult rollOnce(GachaState &state);
+	UrgentPullResult rollTen();
 
 private:
 	double getSSRProbability(int pityCount);
