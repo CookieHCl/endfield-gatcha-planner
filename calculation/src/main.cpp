@@ -6,7 +6,7 @@ int main()
 {
 	iostream::sync_with_stdio(0);
 
-	constexpr long long SIMULATION_COUNT = 10'000'000;
+	constexpr long long SIMULATION_COUNT = 100'000'000;
 	const string outputDir = "results";
 
 	if (!filesystem::exists(outputDir))
