@@ -29,7 +29,7 @@ public:
 		++state.totalCount;
 
 		// 120회 천장
-		if (!state.gotTargetSSR && state.totalCount >= targetThreshold)
+		if (!state.gotTargetSSR && state.totalCount >= targetThreshold) [[unlikely]]
 		{
 			state.pityCount = 0;
 			state.gotTargetSSR = true;
@@ -40,7 +40,7 @@ public:
 		{
 			double ssrProbability = ssrProbTable[state.pityCount];
 
-			if (rng.hit(ssrProbability))
+			if (rng.hit(ssrProbability)) [[unlikely]]
 			{
 				state.pityCount = 0;
 				if (rng.hit(targetSSRProbability))
@@ -66,7 +66,7 @@ public:
 
 		result.SSRCount = rng.binom(10, baseSSRProbability);
 
-		if (result.SSRCount > 0)
+		if (result.SSRCount > 0) [[unlikely]]
 		{
 			result.targetSSRCount = rng.binom(result.SSRCount, targetSSRProbability);
 		}

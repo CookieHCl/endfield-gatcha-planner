@@ -42,16 +42,16 @@ std::pair<int, int> Simulator::runSingleSession(RNG &rng)
 	{
 		PullResult pullResult = GachaEngine::rollOnce(state, rng);
 
-		if (pullResult == PullResult::COMMON_SSR || pullResult == PullResult::TARGET_SSR)
+		if (pullResult == PullResult::COMMON_SSR || pullResult == PullResult::TARGET_SSR) [[unlikely]]
 		{
 			++SSRCount;
 		}
 
-		if (state.totalCount == 30)
+		if (state.totalCount == 30) [[unlikely]]
 		{
 			UrgentPullResult urgentResult = GachaEngine::rollTen(rng);
 			SSRCount += urgentResult.SSRCount;
-			if (urgentResult.targetSSRCount > 0)
+			if (urgentResult.targetSSRCount > 0) [[unlikely]]
 			{
 				break;
 			}

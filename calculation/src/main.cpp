@@ -26,6 +26,7 @@ int main()
 	cout << "Expected SSR count: " << (double)ssrEv / SIMULATION_COUNT << "\n";
 
 	// Thread 이전) 7909ms
+	// Thread 이후) 385ms!!!
 	cout << "Simulation Time: "
 		 << chrono::duration_cast<chrono::milliseconds>(end - start).count()
 		 << " ms\n";
