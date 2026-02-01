@@ -44,3 +44,5 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 $(OUT): $(OBJS)
 	@mkdir -p $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) $(OBJS) -o $@
+
+-include $(DEPS)
