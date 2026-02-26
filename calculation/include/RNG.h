@@ -1,35 +1,64 @@
 #pragma once
 #include <random>
 #include <chrono>
-#include <thread>
+#include <atomic>
+#include <cstdint>
 
 // 64bit [0.0~1.0) RNG
 class RNG
 {
-public:
-	inline RNG()
+private:
+	class Seeder
 	{
-		// 느리지만 seed_seq를 사용해 무조건 랜덤 보장
-		typedef std::seed_seq::result_type seed_type;
-
-		std::seed_seq ss{
-			static_cast<seed_type>(std::random_device{}()),
-			static_cast<seed_type>(std::chrono::high_resolution_clock::now().time_since_epoch().count()),
-			static_cast<seed_type>(std::hash<std::thread::id>{}(std::this_thread::get_id()))};
-
-		uint32_t seeds[8];
-		ss.generate(seeds, seeds + 8);
-
-		for (int i = 0; i < 4; ++i)
+	private:
+		static inline std::atomic<uint64_t> global_seed_state = []()
 		{
-			state[i] = (static_cast<uint64_t>(seeds[i * 2]) << 32) | seeds[i * 2 + 1];
-		}
-	}
+			std::random_device rd;
 
+			uint64_t rd_seed = ((uint64_t)(rd()) << 32) | (uint64_t)(rd());
+			uint64_t time_seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+
+			return rd_seed ^ time_seed;
+		}();
+
+	public:
+		static inline uint64_t getSeed()
+		{
+			// https://softwareengineering.stackexchange.com/q/402542
+			return global_seed_state.fetch_add(0x9e3779b97f4a7c15ull, std::memory_order_relaxed);
+		}
+	};
+
+	class InternalRNG
+	{
+		// wyrand (26/02/27)
+		// https://github.com/wangyi-fudan/wyhash
+	private:
+		uint64_t seed;
+
+		inline uint64_t wyrand()
+		{
+			seed += 0x2d358dccaa6c78a5ull;
+			__uint128_t r = (__uint128_t)seed * (__uint128_t)(seed ^ 0x8bb84b93962eacc9ull);
+			return (uint64_t)r ^ (uint64_t)(r >> 64);
+		}
+
+	public:
+		inline InternalRNG() : seed(Seeder::getSeed()) {}
+
+		inline uint64_t operator()()
+		{
+			return wyrand();
+		}
+	};
+
+	InternalRNG rand;
+
+public:
 	inline double operator()()
 	{
 		static constexpr double inverse_2_53 = 1.0 / 9007199254740992.0; // 1 / 2^53
-		return (xoshiro256p() >> 11) * inverse_2_53;
+		return (rand() >> 11) * inverse_2_53;
 	}
 
 	inline bool hit(double probability)
@@ -48,31 +77,5 @@ public:
 			}
 		}
 		return count;
-	}
-
-private:
-	// xoshiro256+ (only for floating number)
-	// https://en.wikipedia.org/wiki/Xorshift#xoshiro256+
-	static inline uint64_t rol64(uint64_t x, int k)
-	{
-		return (x << k) | (x >> (64 - k));
-	}
-
-	uint64_t state[4];
-
-	inline uint64_t xoshiro256p()
-	{
-		uint64_t const result = state[0] + state[3];
-		uint64_t const t = state[1] << 17;
-
-		state[2] ^= state[0];
-		state[3] ^= state[1];
-		state[1] ^= state[2];
-		state[0] ^= state[3];
-
-		state[2] ^= t;
-		state[3] = rol64(state[3], 45);
-
-		return result;
 	}
 };
