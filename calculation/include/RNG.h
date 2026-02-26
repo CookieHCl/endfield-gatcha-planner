@@ -3,11 +3,15 @@
 #include <chrono>
 #include <atomic>
 #include <cstdint>
+#include <stdfloat>
+#include <bit>
 
 // 64bit [0.0~1.0) RNG
 class RNG
 {
 private:
+	using float64_t = std::float64_t;
+
 	class Seeder
 	{
 	private:
@@ -55,18 +59,24 @@ private:
 	InternalRNG rand;
 
 public:
-	inline double operator()()
+	inline uint64_t operator()()
 	{
-		static constexpr double inverse_2_53 = 1.0 / 9007199254740992.0; // 1 / 2^53
-		return (rand() >> 11) * inverse_2_53;
+		return rand();
 	}
 
-	inline bool hit(double probability)
+	inline float64_t ie01() // [0,1)
 	{
-		return (*this)() < probability;
+		uint64_t rand52 = rand() >> 12;
+		uint64_t bits = 0x3FF0000000000000ULL | rand52;
+		return std::bit_cast<float64_t>(bits) - 1.0;
 	}
 
-	inline int binom(int n, double p)
+	inline bool hit(float64_t probability)
+	{
+		return ie01() < probability;
+	}
+
+	inline int binom(int n, float64_t p)
 	{
 		int count = 0;
 		for (int i = 0; i < n; ++i)
