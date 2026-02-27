@@ -30,6 +30,7 @@ private:
 	public:
 		static uint64_t getSeed()
 		{
+			// golden ratio constant
 			// https://softwareengineering.stackexchange.com/q/402542
 			return global_seed_state.fetch_add(0x9e3779b97f4a7c15ull, std::memory_order_relaxed);
 		}
@@ -70,6 +71,8 @@ public:
 	// N shoulde be N > 0
 	uint64_t lessThan(uint64_t N) // [0, N)
 	{
+		// Lemire's nearly divisionless random
+		// https://sts10.github.io/2020/10/10/lemire-neaarly-divisionless-random.html
 		__uint128_t m = (__uint128_t)(rand()) * (__uint128_t)N;
 		uint64_t l = (uint64_t)m;
 
@@ -97,7 +100,6 @@ public:
 		do
 		{
 			m = (__uint128_t)(rand()) * (__uint128_t)N;
-			uint64_t l = (uint64_t)m;
 		} while ((uint64_t)m < t);
 
 		return m >> 64;
