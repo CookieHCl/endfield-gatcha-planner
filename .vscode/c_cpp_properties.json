@@ -3,7 +3,13 @@
 		{
 			"name": "Win32",
 			"includePath": [
-				"${workspaceFolder}/calculation/**"
+				"${workspaceFolder}/calculation/include",
+				"${workspaceFolder}/calculation/src"
+			],
+			"compilerArgs": [
+				"-Wall",
+				"-Wextra",
+				"-fopenmp"
 			],
 			"windowsSdkVersion": "10.0.26100.0",
 			"compilerPath": "C:/w64devkit/bin/g++.exe",
