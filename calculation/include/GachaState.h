@@ -6,5 +6,5 @@ struct GachaState
 	int totalCount;
 	bool gotTargetSSR;
 
-	inline GachaState(int pityCount) : pityCount(pityCount), totalCount(0), gotTargetSSR(false) {}
+	GachaState(int pityCount) : pityCount(pityCount), totalCount(0), gotTargetSSR(false) {}
 };

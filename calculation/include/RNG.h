@@ -28,7 +28,7 @@ private:
 		}();
 
 	public:
-		static inline uint64_t getSeed()
+		static uint64_t getSeed()
 		{
 			// https://softwareengineering.stackexchange.com/q/402542
 			return global_seed_state.fetch_add(0x9e3779b97f4a7c15ull, std::memory_order_relaxed);
@@ -42,7 +42,7 @@ private:
 	private:
 		uint64_t seed;
 
-		inline uint64_t wyrand()
+		uint64_t wyrand()
 		{
 			seed += 0x2d358dccaa6c78a5ull;
 			__uint128_t r = (__uint128_t)seed * (__uint128_t)(seed ^ 0x8bb84b93962eacc9ull);
@@ -50,9 +50,9 @@ private:
 		}
 
 	public:
-		inline InternalRNG() : seed(Seeder::getSeed()) {}
+		InternalRNG() : seed(Seeder::getSeed()) {}
 
-		inline uint64_t operator()()
+		uint64_t operator()()
 		{
 			return wyrand();
 		}
@@ -61,14 +61,14 @@ private:
 	InternalRNG rand;
 
 public:
-	inline uint64_t operator()()
+	uint64_t operator()()
 	{
 		return rand();
 	}
 
 	// unsigned integers
 	// N shoulde be N > 0
-	inline uint64_t lessThan(uint64_t N) // [0, N)
+	uint64_t lessThan(uint64_t N) // [0, N)
 	{
 		__uint128_t m = (__uint128_t)(rand()) * (__uint128_t)N;
 		uint64_t l = (uint64_t)m;
@@ -88,7 +88,7 @@ public:
 	}
 	// N should be N > 0
 	template <uint64_t N>
-	inline uint64_t lessThan() // [0, N), slightly faster with constexpr
+	uint64_t lessThan() // [0, N), slightly faster with constexpr
 	{
 		constexpr uint64_t t = -N % N;
 
@@ -105,7 +105,7 @@ public:
 
 	// integers
 	// should be A <= B
-	inline int64_t between(int64_t A, int64_t B) // [A, B]
+	int64_t between(int64_t A, int64_t B) // [A, B]
 	{
 		uint64_t distance = (uint64_t)B - (uint64_t)A;
 		if (distance == 0) [[unlikely]]
@@ -121,7 +121,7 @@ public:
 	}
 	// should be A <= B
 	template <int64_t A, int64_t B>
-	inline int64_t between() // [A, B], slightly faster with constexpr
+	int64_t between() // [A, B], slightly faster with constexpr
 	{
 		constexpr uint64_t distance = (uint64_t)B - (uint64_t)A;
 		if constexpr (distance == 0)
@@ -137,31 +137,31 @@ public:
 	}
 
 	// floating-point numbers
-	inline float64_t ie01() // [0,1)
+	float64_t ie01() // [0,1)
 	{
 		uint64_t rand52 = rand() >> 12;
 		uint64_t bits = 0x3FF0000000000000ULL | rand52;
 		return std::bit_cast<float64_t>(bits) - 1.0;
 	}
-	inline float64_t ei01() // (0,1]
+	float64_t ei01() // (0,1]
 	{
 		uint64_t rand52 = rand() >> 12;
 		uint64_t bits = 0x3FF0000000000000ULL | rand52;
 		return 2.0 - std::bit_cast<float64_t>(bits);
 	}
-	inline float64_t ee01() // (0,1)
+	float64_t ee01() // (0,1)
 	{
 		uint64_t rand52 = rand() >> 12;						// 0 ~ 2^52-1
 		return ((float64_t)rand52 + 0.5f64) * 0x1.0p-52f64; // 0.5 / 2^52 ~ (2^52-0.5) / 2^52
 	}
-	inline float64_t ii01() // [0,1]
+	float64_t ii01() // [0,1]
 	{
 		uint64_t rand53 = rand() >> 11;								   // 0 ~ 2^53-1
 		return ((float64_t)rand53) * (1.0f64 / 9007199254740991.0f64); // 0 ~ (2^53-1) / (2^53-1)
 	}
 
 	// should be A < B
-	inline float64_t ieRange(float64_t A, float64_t B) // [A, B)
+	float64_t ieRange(float64_t A, float64_t B) // [A, B)
 	{
 		float64_t res = std::fma(ie01(), B - A, A);
 		if (res >= B) [[unlikely]]
@@ -171,7 +171,7 @@ public:
 		return res;
 	}
 	// should be A < B
-	inline float64_t eiRange(float64_t A, float64_t B) // (A, B]
+	float64_t eiRange(float64_t A, float64_t B) // (A, B]
 	{
 		float64_t res = std::fma(ei01(), B - A, A);
 		if (res <= A) [[unlikely]]
@@ -181,7 +181,7 @@ public:
 		return res;
 	}
 	// should be A < B
-	inline float64_t eeRange(float64_t A, float64_t B) // (A, B)
+	float64_t eeRange(float64_t A, float64_t B) // (A, B)
 	{
 		float64_t res = std::fma(ee01(), B - A, A);
 		if (res <= A) [[unlikely]]
@@ -195,17 +195,17 @@ public:
 		return res;
 	}
 	// should be A <= B
-	inline float64_t iiRange(float64_t A, float64_t B) // [A, B]
+	float64_t iiRange(float64_t A, float64_t B) // [A, B]
 	{
 		return std::fma(ii01(), B - A, A);
 	}
 
-	inline bool hit(float64_t probability)
+	bool hit(float64_t probability)
 	{
 		return ie01() < probability;
 	}
 
-	inline int binom(int n, float64_t p)
+	int binom(int n, float64_t p)
 	{
 		int count = 0;
 		for (int i = 0; i < n; ++i)

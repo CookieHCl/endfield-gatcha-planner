@@ -21,7 +21,7 @@ struct UrgentPullResult
 class GachaEngine
 {
 public:
-	static inline PullResult rollOnce(GachaState &state, RNG &rng)
+	static PullResult rollOnce(GachaState &state, RNG &rng)
 	{
 		// 편하게 일단 스택 증가시키고 시작함
 		// 1번째 뽑기 -> 1/1
@@ -60,7 +60,7 @@ public:
 		}
 	}
 
-	static inline UrgentPullResult rollTen(RNG &rng)
+	static UrgentPullResult rollTen(RNG &rng)
 	{
 		UrgentPullResult result;
 
