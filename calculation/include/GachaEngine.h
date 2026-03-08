@@ -1,6 +1,7 @@
 #pragma once
 #include "GachaState.h"
 #include "RNG.h"
+#include <algorithm>
 #include <array>
 
 enum class PullResult
@@ -38,12 +39,12 @@ public:
 		// 반천
 		else
 		{
-			double ssrProbability = ssrProbTable[state.pityCount];
+			const int ssrProbability = ssrProbTable[state.pityCount];
 
-			if (rng.hit(ssrProbability)) [[unlikely]]
+			if (rng.lessThan<1000>() < static_cast<uint64_t>(ssrProbability)) [[unlikely]]
 			{
 				state.pityCount = 0;
-				if (rng.hit(targetSSRProbability))
+				if (rng.lessThan<1000>() < static_cast<uint64_t>(targetSSRProbability))
 				{
 					state.gotTargetSSR = true;
 					return PullResult::TARGET_SSR;
@@ -64,11 +65,17 @@ public:
 	{
 		UrgentPullResult result;
 
-		result.SSRCount = rng.binom(10, baseSSRProbability);
-
-		if (result.SSRCount > 0) [[unlikely]]
+		for (int i = 0; i < 10; ++i)
 		{
-			result.targetSSRCount = rng.binom(result.SSRCount, targetSSRProbability);
+			if (rng.lessThan<1000>() < static_cast<uint64_t>(baseSSRProbability)) [[unlikely]]
+			{
+				++result.SSRCount;
+
+				if (rng.lessThan<1000>() < static_cast<uint64_t>(targetSSRProbability))
+				{
+					++result.targetSSRCount;
+				}
+			}
 		}
 
 		return result;
@@ -78,25 +85,28 @@ private:
 	static constexpr int pityThreshold = 80;
 	static constexpr int targetThreshold = 120;
 
-	static constexpr double baseSSRProbability = 0.008;
+	// 확률은 1/1000 단위 정수로 관리
+	static constexpr int baseSSRProbability = 8;  // 0.8%
 	static constexpr int probabilityIncreaseThreshold = 65;
-	static constexpr double probabilityIncreasePerPull = 0.05;
+	static constexpr int probabilityIncreasePerPull = 50; // +5.0%p
 
-	static constexpr double targetSSRProbability = 0.5;
+	static constexpr int targetSSRProbability = 500; // 50%
 
 	static constexpr auto ssrProbTable = []
 	{
-		std::array<double, 81> table{};
+		std::array<int, 81> table{};
 		for (int pityCount = 0; pityCount <= pityThreshold; ++pityCount)
 		{
 			if (pityCount >= pityThreshold)
 			{
-				table[pityCount] = 1.0;
+				table[pityCount] = 1000;
 			}
 			else if (pityCount >= probabilityIncreaseThreshold)
 			{
-				double increasedProbability = baseSSRProbability + (pityCount - probabilityIncreaseThreshold) * probabilityIncreasePerPull;
-				table[pityCount] = std::min(increasedProbability, 1.0);
+				const int increasedProbability =
+					baseSSRProbability +
+					(pityCount - probabilityIncreaseThreshold) * probabilityIncreasePerPull;
+				table[pityCount] = std::min(increasedProbability, 1000);
 			}
 			else
 			{

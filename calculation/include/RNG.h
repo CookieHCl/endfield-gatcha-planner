@@ -201,22 +201,4 @@ public:
 	{
 		return std::fma(ii01(), B - A, A);
 	}
-
-	bool hit(float64_t probability)
-	{
-		return ie01() < probability;
-	}
-
-	int binom(int n, float64_t p)
-	{
-		int count = 0;
-		for (int i = 0; i < n; ++i)
-		{
-			if (hit(p)) [[unlikely]]
-			{
-				++count;
-			}
-		}
-		return count;
-	}
 };
